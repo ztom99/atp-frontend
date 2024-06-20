@@ -20,7 +20,9 @@
       "@helpers/*": ["./src/helpers/*"],
       "@modules/*": ["./src/modules/*"],
       "@workers/*": ["./src/workers/*"],
-      "@functional/*": ["./src/helpers/functional/*"]
+      "@functional/*": ["./src/helpers/functional/*"],
+      "@hoppscotch/common": ["../hoppscotch-common/src/index.ts"],
+      "@hoppscotch/common/*": ["../hoppscotch-common/src/*"],
     },
     "types": [
       "vite/client",
