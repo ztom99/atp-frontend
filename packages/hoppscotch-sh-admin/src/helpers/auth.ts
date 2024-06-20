@@ -8,6 +8,7 @@ import { Ref, ref } from 'vue';
 import * as O from 'fp-ts/Option';
 import authQuery from './backend/rest/authQuery';
 import { COOKIES_NOT_FOUND, UNAUTHORIZED } from './errors';
+import { AuthTokenType }  from '~/helpers/axiosConfig';
 
 /**
  * A common (and required) set of fields that describe a user.
@@ -61,7 +62,8 @@ const signOut = async (reloadWindow = false) => {
 
   currentUser$.next(null);
   removeLocalConfig('login_state');
-
+  removeLocalConfig(AuthTokenType.ACCESS_TOKEN);
+  removeLocalConfig(AuthTokenType.REFRESH_TOKEN);
   authEvents$.next({
     event: 'logout',
   });
@@ -85,11 +87,10 @@ const setInitialUser = async () => {
   if (res.errors?.[0]) {
     const [error] = res.errors;
 
-    if (error.message === COOKIES_NOT_FOUND) {
+    if (error.message === COOKIES_NOT_FOUND || error.message.includes("auth/cookies_not_found")){
       setUser(null);
-    } else if (error.message === UNAUTHORIZED) {
+    } else if (error.message === UNAUTHORIZED || error.message.includes("UNAUTHORIZED")) {
       const isRefreshSuccess = await refreshToken();
-
       if (isRefreshSuccess) {
         setInitialUser();
       } else {
@@ -99,7 +100,6 @@ const setInitialUser = async () => {
     }
   } else if (res.data?.me) {
     const { uid, displayName, email, photoURL, isAdmin } = res.data.me;
-
     const hoppUser: HoppUser = {
       uid,
       displayName,
@@ -143,11 +143,11 @@ const elevateUser = async () => {
 
 const sendMagicLink = async (email: string) => {
   const res = await authQuery.sendMagicLink(email);
-  if (!res.data?.deviceIdentifier) {
+  if (!res.data.data?.deviceIdentifier) {
     throw new Error('test: does not get device identifier');
   }
-  setLocalConfig('deviceIdentifier', res.data.deviceIdentifier);
-  return res.data;
+  setLocalConfig('deviceIdentifier', res.data.data.deviceIdentifier);
+  return res.data.data;
 };
 
 export const auth = {
@@ -187,13 +187,24 @@ export const auth = {
     }/auth/microsoft?redirect_uri=${import.meta.env.VITE_ADMIN_URL}`;
   },
 
-  signInWithEmailLink: (url: string) => {
+  signInWithEmailLink: async (url: string) => {
     const urlObject = new URL(url);
     const searchParams = new URLSearchParams(urlObject.search);
     const token = searchParams.get('token');
     const deviceIdentifier = getLocalConfig('deviceIdentifier');
-
-    return authQuery.signInWithEmailLink(token, deviceIdentifier);
+    const res = await authQuery.signInWithEmailLink(token, deviceIdentifier);
+    if (res.data && res.data.data && res.data.data.accessToken && res.data.data.refreshToken) {
+      setLocalConfig(
+        AuthTokenType.ACCESS_TOKEN,
+        res.data.data.accessToken
+      )
+      setLocalConfig(
+        AuthTokenType.REFRESH_TOKEN,
+        res.data.data.refreshToken
+      )
+    } else {
+      throw new Error("test: accessToken or refreshToken not found")
+    }
   },
 
   performAuthRefresh: async () => {
@@ -222,7 +233,6 @@ export const auth = {
       }
 
       await auth.signInWithEmailLink(window.location.href);
-
       removeLocalConfig('deviceIdentifier');
       window.location.href = import.meta.env.VITE_ADMIN_URL;
     }
@@ -230,13 +240,20 @@ export const auth = {
 
   getAllowedAuthProviders: async () => {
     const res = await authQuery.getProviders();
-    return res.data?.providers;
+    return res.data.data;
   },
 
   getFirstTimeInfraSetupStatus: async (): Promise<boolean> => {
     try {
       const res = await authQuery.getFirstTimeInfraSetupStatus();
-      return res.data?.value === 'true';
+      if (res.data.code === 'HPS-COM-404') {
+        return true;
+      }
+      if (res.data.data?.value === 'true') {
+        return true;
+      }
+      return false; 
+      // return res.data.data?.value === 'true';
     } catch (err) {
       // Setup is not done
       return true;

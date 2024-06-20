@@ -9,6 +9,7 @@
 <script setup lang="ts">
 import { onBeforeMount, onMounted, ref } from 'vue';
 import { auth } from '~/helpers/auth';
+import AppLogo from '@hoppscotch/common/components/app/Logo.vue';
 
 const signingInWithEmail = ref(false);
 const error = ref(null);

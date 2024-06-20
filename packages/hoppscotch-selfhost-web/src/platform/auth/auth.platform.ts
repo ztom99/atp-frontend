@@ -181,7 +181,7 @@ async function refreshToken() {
 
 async function sendMagicLink(email: string) {
   const res = await axios.post(
-    `${import.meta.env.VITE_BACKEND_API_URL}/auth/signIn`,
+    `${import.meta.env.VITE_BACKEND_API_URL}/auth/signin`,
     {
       email,
     },

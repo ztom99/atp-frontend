@@ -44,18 +44,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useQuery } from '@urql/vue';
-import { MetricsDocument } from '../helpers/backend/graphql';
 import UserIcon from '~icons/lucide/user';
 import UsersIcon from '~icons/lucide/users';
 import LineChartIcon from '~icons/lucide/line-chart';
 import FolderTreeIcon from '~icons/lucide/folder-tree';
 import { useI18n } from '../composables/i18n';
+import commonQuery from '~/helpers/backend/rest/commonQuery';
+import { ref, onMounted } from 'vue';
 
 const t = useI18n();
+const metrics = ref(null);
+const error = ref(null);
+const fetching = ref(false);
 
-// Get Metrics Data
-const { fetching, error, data } = useQuery({ query: MetricsDocument });
-const metrics = computed(() => data?.value?.infra);
+onMounted(async () => {
+  fetching.value = true;
+  try {
+    const res = await commonQuery.getMetrics();
+    metrics.value = res.data.data.infra;
+    fetching.value = false;
+  } catch (err) {
+    console.error(err);
+    fetching.value = false;
+  }
+});
 </script>
