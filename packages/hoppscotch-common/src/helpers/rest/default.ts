@@ -2,7 +2,7 @@ import { HoppRESTRequest, RESTReqSchemaVersion } from "@hoppscotch/data"
 
 export const getDefaultRESTRequest = (): HoppRESTRequest => ({
   v: RESTReqSchemaVersion,
-  endpoint: "https://echo.hoppscotch.io",
+  endpoint: "",
   name: "Untitled",
   params: [],
   headers: [],

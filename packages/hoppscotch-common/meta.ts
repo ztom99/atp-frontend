@@ -1,12 +1,12 @@
 import { IHTMLTag } from "vite-plugin-html-config"
 
 export const APP_INFO = {
-  name: "Hoppscotch",
-  shortDescription: "Open source API development ecosystem",
+  name: "Atp",
+  shortDescription: "Inherits from Hoppscotch-Open source API development ecosystem",
   description:
     "Helps you create requests faster, saving precious time on development.",
   keywords:
-    "hoppscotch, hopp scotch, hoppscotch online, hoppscotch app, postwoman, postwoman chrome, postwoman online, postwoman for mac, postwoman app, postwoman for windows, postwoman google chrome, postwoman chrome app, get postwoman, postwoman web, postwoman android, postwoman app for chrome, postwoman mobile app, postwoman web app, api, request, testing, tool, rest, websocket, sse, graphql, socketio",
+    "atp, hoppscotch, hopp scotch, hoppscotch online, hoppscotch app, postwoman, postwoman chrome, postwoman online, postwoman for mac, postwoman app, postwoman for windows, postwoman google chrome, postwoman chrome app, get postwoman, postwoman web, postwoman android, postwoman app for chrome, postwoman mobile app, postwoman web app, api, request, testing, tool, rest, websocket, sse, graphql, socketio",
   app: {
     background: "#181818",
     lightThemeColor: "#ffffff",
