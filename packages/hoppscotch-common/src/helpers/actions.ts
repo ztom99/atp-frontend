@@ -63,6 +63,7 @@ export type HoppAction =
   | "response.file.download" // Download response as file
   | "response.copy" // Copy response to clipboard
   | "modals.login.toggle" // Login to Hoppscotch
+  | "modals.signup.toggle" // Signup to Hoppscotch
   | "history.clear" // Clear REST History
   | "user.login" // Login to Hoppscotch
   | "user.logout" // Log out of Hoppscotch
