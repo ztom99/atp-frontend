@@ -13,21 +13,21 @@ COPY . .
 RUN pnpm install -f --offline
 
 
-FROM base_builder as backend
-RUN apk add caddy
-WORKDIR /usr/src/app/packages/hoppscotch-backend
-RUN pnpm exec prisma generate
-RUN pnpm run build
-COPY --from=base_builder /usr/src/app/packages/hoppscotch-backend/backend.Caddyfile /etc/caddy/backend.Caddyfile
-# Remove the env file to avoid backend copying it in and using it
-RUN rm "../../.env"
-ENV PRODUCTION="true"
-ENV PORT=8080
-ENV APP_PORT=${PORT}
-ENV DB_URL=${DATABASE_URL}
-CMD ["node", "/usr/src/app/packages/hoppscotch-backend/prod_run.mjs"]
-EXPOSE 80
-EXPOSE 3170
+# FROM base_builder as backend
+# RUN apk add caddy
+# WORKDIR /usr/src/app/packages/hoppscotch-backend
+# RUN pnpm exec prisma generate
+# RUN pnpm run build
+# COPY --from=base_builder /usr/src/app/packages/hoppscotch-backend/backend.Caddyfile /etc/caddy/backend.Caddyfile
+# # Remove the env file to avoid backend copying it in and using it
+# RUN rm "../../.env"
+# ENV PRODUCTION="true"
+# ENV PORT=8080
+# ENV APP_PORT=${PORT}
+# ENV DB_URL=${DATABASE_URL}
+# CMD ["node", "/usr/src/app/packages/hoppscotch-backend/prod_run.mjs"]
+# EXPOSE 80
+# EXPOSE 3170
 
 FROM base_builder as fe_builder
 WORKDIR /usr/src/app/packages/hoppscotch-selfhost-web
@@ -63,23 +63,23 @@ EXPOSE 80
 EXPOSE 3100
 CMD ["node","/usr/prod_run.mjs"]
 
-FROM backend as aio
-RUN apk add caddy tini
-RUN npm install -g @import-meta-env/cli
-COPY --from=fe_builder /usr/src/app/packages/hoppscotch-selfhost-web/dist /site/selfhost-web
-COPY --from=sh_admin_builder /usr/src/app/packages/hoppscotch-sh-admin/dist-multiport-setup /site/sh-admin-multiport-setup
-COPY --from=sh_admin_builder /usr/src/app/packages/hoppscotch-sh-admin/dist-subpath-access /site/sh-admin-subpath-access
-COPY aio-multiport-setup.Caddyfile /etc/caddy/aio-multiport-setup.Caddyfile
-COPY aio-subpath-access.Caddyfile /etc/caddy/aio-subpath-access.Caddyfile
-ENTRYPOINT [ "tini", "--" ]
-RUN apk --no-cache add curl
-COPY --chmod=755 healthcheck.sh .
-HEALTHCHECK --interval=2s CMD /bin/sh ./healthcheck.sh
-CMD ["node", "/usr/src/app/aio_run.mjs"]
-EXPOSE 3170
-EXPOSE 3000
-EXPOSE 3100
-EXPOSE 80
+# FROM backend as aio
+# RUN apk add caddy tini
+# RUN npm install -g @import-meta-env/cli
+# COPY --from=fe_builder /usr/src/app/packages/hoppscotch-selfhost-web/dist /site/selfhost-web
+# COPY --from=sh_admin_builder /usr/src/app/packages/hoppscotch-sh-admin/dist-multiport-setup /site/sh-admin-multiport-setup
+# COPY --from=sh_admin_builder /usr/src/app/packages/hoppscotch-sh-admin/dist-subpath-access /site/sh-admin-subpath-access
+# COPY aio-multiport-setup.Caddyfile /etc/caddy/aio-multiport-setup.Caddyfile
+# COPY aio-subpath-access.Caddyfile /etc/caddy/aio-subpath-access.Caddyfile
+# ENTRYPOINT [ "tini", "--" ]
+# RUN apk --no-cache add curl
+# COPY --chmod=755 healthcheck.sh .
+# HEALTHCHECK --interval=2s CMD /bin/sh ./healthcheck.sh
+# CMD ["node", "/usr/src/app/aio_run.mjs"]
+# EXPOSE 3170
+# EXPOSE 3000
+# EXPOSE 3100
+# EXPOSE 80
 
 
 
