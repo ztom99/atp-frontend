@@ -71,6 +71,11 @@
               class="h-8"
               @click="invokeAction('modals.login.toggle')"
             />
+            <HoppButtonPrimary
+              label="Sign up"
+              class="h-8"
+              @click="invokeAction('modals.signup.toggle')"
+            />
           </div>
           <div v-else class="inline-flex items-center space-x-2">
             <TeamsMemberStack

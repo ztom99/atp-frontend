@@ -163,6 +163,45 @@ export const auth = {
 
   signInWithEmail: (email: string) => sendMagicLink(email),
 
+  login: async(email: string, password: string) => {
+    const res = await authQuery.loginWithEmail(email, password);
+    if (!res.data){
+      throw new Error("login failed")
+    }
+    if(res.data.code === 'HPS-COM-103'){
+      throw new Error("password not match")
+    }
+    if(res.data.code === 'HPS-COM-902'){
+      throw new Error("user not found")
+    }
+    if (!res.data.data || !res.data.data.user || !res.data.data.jwtTokenDto) {
+      throw new Error("login failed")
+    }
+    // 设置用户的基本信息
+    const hoppBackendUser = res.data.data.user
+    const hoppUser: HoppUser = {
+      uid: hoppBackendUser.uid,
+      displayName: hoppBackendUser.displayName,
+      email: hoppBackendUser.email,
+      photoURL: hoppBackendUser.photoURL,
+      // all our signin methods currently guarantees the email is verified
+      emailVerified: true,
+      isAdmin: hoppBackendUser.isAdmin
+    }
+    setUser(hoppUser)
+
+    // 设置用户token
+    setLocalConfig(
+      AuthTokenType.ACCESS_TOKEN,
+      res.data.data.jwtTokenDto.accessToken
+    )
+    setLocalConfig(
+      AuthTokenType.REFRESH_TOKEN,
+      res.data.data.jwtTokenDto.refreshToken
+    )
+    window.location.href = import.meta.env.VITE_ADMIN_URL;
+  },
+
   isSignInWithEmailLink: (url: string) => {
     const urlObject = new URL(url);
     const searchParams = new URLSearchParams(urlObject.search);
@@ -252,7 +291,7 @@ export const auth = {
       if (res.data.data?.value === 'true') {
         return true;
       }
-      return false; 
+      return false;
       // return res.data.data?.value === 'true';
     } catch (err) {
       // Setup is not done

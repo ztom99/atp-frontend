@@ -245,6 +245,22 @@ export type AuthPlatformDef = {
    * Defines the additional login items that should be shown in the login screen
    */
   additionalLoginItems?: LoginItemDef[]
+
+  /**
+   * 用户密码登录
+   * @param email
+   * @param password
+   * @returns
+   */
+  login: (email: string, password: string) => Promise<void>
+
+  /**
+   * 用户注册
+   * @param email
+   * @param password
+   * @returns
+   */
+  signup: (email: string, password: string, confirmPassword: string) => Promise<void>
 }
 
 export enum AuthTokenType {

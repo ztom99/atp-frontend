@@ -29,6 +29,15 @@ export default {
       token,
       deviceIdentifier,
     }),
+  loginWithEmail: (
+    email: string | null,
+    password: string | null
+  ) =>
+    restApi.post('/auth/login', {
+      email,
+      password,
+      origin: 'admin',
+    }),
   getFirstTimeInfraSetupStatus: () => restApi.get('/site/setup'),
   updateFirstTimeInfraSetupStatus: () => restApi.put('/site/setup'),
   logout: () => restApi.get('/auth/logout'),

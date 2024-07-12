@@ -98,12 +98,22 @@ function setUser(user: HoppUser | null) {
 
 async function setInitialUser() {
   isGettingInitialUser.value = true
+  const curUser = persistenceService.getLocalConfig("login_state")
+  // 如果有登录状态，就直接返回
+  if(curUser !== null && curUser !== 'null'){
+    isGettingInitialUser.value = false
+    authEvents$.next({
+      event: "login",
+      user: JSON.parse(curUser),
+    })
+    return
+  }
   const res = await getInitialUserDetails()
 
   const error = res.errors && res.errors[0]
 
   // no cookies sent. so the user is not logged in
-  if (error && error.message === "auth/cookies_not_found") {
+  if (error && error.message.includes("auth/cookies_not_found")) {
     setUser(null)
     isGettingInitialUser.value = false
     return
@@ -200,6 +210,81 @@ async function sendMagicLink(email: string) {
   }
 
   return res.data.data
+}
+
+async function signup(email: string, password: string, confirmPassword: string) {
+  const res = await axios.post(
+    `${import.meta.env.VITE_BACKEND_API_URL}/auth/signup`,
+    {
+      email,
+      password,
+      confirmPassword,
+    },
+    {
+      withCredentials: true,
+    }
+  )
+
+  if (res.data) {
+    if(res.data.code === 'HPS-COM-102'){
+      throw new Error("user already exist")
+    }
+    if(res.data.data && res.data.data.deviceIdentifier){
+      persistenceService.setLocalConfig("deviceIdentifier", res.data.data.deviceIdentifier)
+    }else {
+       throw new Error("Sign up failed")
+    }
+  } else {
+    throw new Error("Sign up failed")
+  }
+  return res.data.data
+}
+
+async function login(email: string, password: string) {
+  const res = await axios.post(
+    `${import.meta.env.VITE_BACKEND_API_URL}/auth/login`,
+    {
+      email,
+      password,
+      origin: 'user',
+    },
+    {
+      withCredentials: true,
+    }
+  )
+  if (!res.data){
+    throw new Error("login failed")
+  }
+  if(res.data.code === 'HPS-COM-103'){
+    throw new Error("password not match")
+  }
+  if(res.data.code === 'HPS-COM-902'){
+    throw new Error("user not found")
+  }
+  if (!res.data.data || !res.data.data.user || !res.data.data.jwtTokenDto) {
+    throw new Error("login failed")
+  }
+  // 设置用户的基本信息
+  const hoppBackendUser = res.data.data.user
+  const hoppUser: HoppUser = {
+    uid: hoppBackendUser.uid,
+    displayName: hoppBackendUser.displayName,
+    email: hoppBackendUser.email,
+    photoURL: hoppBackendUser.photoURL,
+    // all our signin methods currently guarantees the email is verified
+    emailVerified: true,
+  }
+  setUser(hoppUser)
+
+  // 设置用户token
+  persistenceService.setLocalConfig(
+    AuthTokenType.ACCESS_TOKEN,
+    res.data.data.jwtTokenDto.accessToken
+  )
+  persistenceService.setLocalConfig(
+    AuthTokenType.REFRESH_TOKEN,
+    res.data.data.jwtTokenDto.refreshToken
+  )
 }
 
 export const def: AuthPlatformDef = {
@@ -395,4 +480,12 @@ export const def: AuthPlatformDef = {
     }
   },
   getAllowedAuthProviders,
+
+  async login(email: string, password: string): Promise<void> {
+    return await login(email, password)
+  },
+
+  async signup(email: string, password: string, confirmPassword: string): Promise<void> {
+    return await signup(email, password, confirmPassword)
+  },
 }

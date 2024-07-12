@@ -47,6 +47,7 @@
     "axios": "1.6.2",
     "buffer": "6.0.3",
     "cookie-es": "1.0.0",
+    "crypto-js": "4.2.0",
     "dioc": "1.0.1",
     "esprima": "4.0.1",
     "events": "3.3.0",

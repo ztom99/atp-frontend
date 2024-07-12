@@ -9,7 +9,7 @@
       <div class="flex flex-col items-center">
         <h1 class="text-2xl text-secondaryDark">Login to Admin Dashboard</h1>
       </div>
-      <div class="flex my-6">
+      <div class="flex my-6 custom-login">
         <AppLogin />
       </div>
     </div>
@@ -20,3 +20,11 @@
 meta:
   layout: empty
 </route>
+
+<style scoped>
+  /deep/ .custom-login input {
+    background-color: white !important;
+    border-color: white !important;
+    color: black !important; /* Ensuring the text color is black */
+  }
+</style>

@@ -19,43 +19,9 @@
     <div
       class="p-6 bg-primaryLight rounded-lg border border-primaryDark shadow"
     >
-      <div
-        v-if="mode === 'sign-in' && allowedAuthProviders"
-        class="flex flex-col space-y-2"
-      >
-        <HoppSmartItem
-          v-if="allowedAuthProviders.includes('GITHUB')"
-          :loading="signingInWithGitHub"
-          :icon="IconGithub"
-          :label="t('state.continue_github')"
-          class="!items-center"
-          @click="signInWithGithub"
-        />
-        <HoppSmartItem
-          v-if="allowedAuthProviders.includes('GOOGLE')"
-          :loading="signingInWithGoogle"
-          :icon="IconGoogle"
-          :label="t('state.continue_google')"
-          @click="signInWithGoogle"
-        />
-        <HoppSmartItem
-          v-if="allowedAuthProviders.includes('MICROSOFT')"
-          :loading="signingInWithMicrosoft"
-          :icon="IconMicrosoft"
-          :label="t('state.continue_microsoft')"
-          @click="signInWithMicrosoft"
-        />
-        <HoppSmartItem
-          v-if="allowedAuthProviders.includes('EMAIL')"
-          :icon="IconEmail"
-          :label="t('state.continue_email')"
-          @click="mode = 'email'"
-        />
-      </div>
       <form
-        v-if="mode === 'email' && allowedAuthProviders"
         class="flex flex-col space-y-4"
-        @submit.prevent="signInWithEmail"
+        @submit.prevent="handleLogin"
       >
         <HoppSmartInput
           v-model="form.email"
@@ -63,90 +29,24 @@
           placeholder=" "
           input-styles="floating-input"
           label="Email"
+          :autofocus="false"
         />
-
+        <HoppSmartInput
+          v-model="form.password"
+          type="password"
+          placeholder=" "
+          label="Password"
+          input-styles="floating-input"
+          :autofocus="false"
+        />
         <HoppButtonPrimary
-          :loading="signingInWithEmail"
+          :loading="loggingIn"
           type="submit"
-          :label="t('state.send_magic_link')"
+          label="Login"
+          class="btn-green"
         />
       </form>
-      <div v-if="!allowedAuthProviders">
-        <p>{{ t('state.require_auth_provider') }}</p>
-        <p>{{ t('state.configure_auth') }}</p>
-        <div class="mt-5">
-          <a
-            href="https://docs.hoppscotch.io/documentation/self-host/getting-started"
-          >
-            <HoppButtonSecondary
-              outline
-              filled
-              blank
-              :icon="IconFileText"
-              :label="t('state.self_host_docs')"
-            />
-          </a>
-        </div>
-      </div>
-      <div v-if="mode === 'email-sent'" class="flex flex-col px-4">
-        <div class="flex flex-col items-center justify-center max-w-md">
-          <icon-lucide-inbox class="w-6 h-6 text-accent" />
-          <h3 class="my-2 text-lg text-center">
-            {{ t('state.magic_link_success') }} {{ form.email }}
-          </h3>
-          <p class="text-center">
-            {{ t('state.magic_link_success') }} {{ form.email }}.
-            {{ t('state.magic_link_sign_in') }}
-          </p>
-        </div>
-      </div>
     </div>
-
-    <section class="mt-16">
-      <div
-        v-if="
-          mode === 'sign-in' &&
-          tosLink &&
-          privacyPolicyLink &&
-          allowedAuthProviders
-        "
-        class="text-secondaryLight text-tiny"
-      >
-        {{ t('state.sign_in_agreement') }}
-        <HoppSmartAnchor
-          class="link"
-          :to="tosLink"
-          blank
-          label="Terms of Service"
-        />
-        {{ t('state.and') }}
-        <HoppSmartAnchor
-          class="link"
-          :to="privacyPolicyLink"
-          blank
-          :label="t('state.privacy_policy')"
-        />
-      </div>
-      <div v-if="mode === 'email'">
-        <HoppButtonSecondary
-          :label="t('state.sign_in_options')"
-          :icon="IconArrowLeft"
-          class="!p-0"
-          @click="mode = 'sign-in'"
-        />
-      </div>
-      <div
-        v-if="mode === 'email-sent'"
-        class="flex justify-between flex-1 text-secondaryLight"
-      >
-        <HoppSmartAnchor
-          class="link"
-          :label="t('state.reenter_email')"
-          :icon="IconArrowLeft"
-          @click="mode = 'email'"
-        />
-      </div>
-    </section>
   </div>
 </template>
 
@@ -155,106 +55,45 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from '~/composables/i18n';
 import { useToast } from '~/composables/toast';
 import { auth } from '~/helpers/auth';
-import { setLocalConfig } from '~/helpers/localpersistence';
-import IconEmail from '~icons/auth/email';
-import IconGithub from '~icons/auth/github';
-import IconGoogle from '~icons/auth/google';
-import IconMicrosoft from '~icons/auth/microsoft';
-import IconArrowLeft from '~icons/lucide/arrow-left';
-import IconFileText from '~icons/lucide/file-text';
+import {Encrypt} from "@hoppscotch/common/helpers/utils/encryption";
 
 const t = useI18n();
 const toast = useToast();
-
-const tosLink = import.meta.env.VITE_APP_TOS_LINK;
-const privacyPolicyLink = import.meta.env.VITE_APP_PRIVACY_POLICY_LINK;
-
-const form = ref({
-  email: '',
-});
+const loggingIn = ref(false)
+const form = {
+  email: "",
+  password: "",
+}
 const fetching = ref(false);
 const error = ref(false);
-const signingInWithGoogle = ref(false);
-const signingInWithGitHub = ref(false);
-const signingInWithMicrosoft = ref(false);
-const signingInWithEmail = ref(false);
-const mode = ref('sign-in');
 const nonAdminUser = ref(false);
-
-const allowedAuthProviders = ref<string[]>([]);
 
 onMounted(async () => {
   const user = auth.getCurrentUser();
   if (user && !user.isAdmin) {
     nonAdminUser.value = true;
   }
-  allowedAuthProviders.value = await getAllowedAuthProviders();
 });
 
-const signInWithGoogle = () => {
-  signingInWithGoogle.value = true;
+const isValidEmail = (email: string) => {
+  const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/
+  return emailRegex.test(email)
+}
 
-  try {
-    auth.signInUserWithGoogle();
-  } catch (e) {
-    console.error(e);
-    toast.error(t('state.google_signin_failure'));
+const handleLogin = async () => {
+  if (!isValidEmail(form.email)) {
+    toast.error(t("error.invalid_email_format"))
+    return
   }
-
-  signingInWithGoogle.value = false;
-};
-
-const signInWithGithub = () => {
-  signingInWithGitHub.value = true;
-
+  loggingIn.value = true
   try {
-    auth.signInUserWithGithub();
+    await auth.login(form.email, Encrypt(form.password))
   } catch (e) {
-    console.error(e);
-    toast.error(t('state.github_signin_failure'));
-  }
-
-  signingInWithGitHub.value = false;
-};
-
-const signInWithMicrosoft = () => {
-  signingInWithMicrosoft.value = true;
-
-  try {
-    auth.signInUserWithMicrosoft();
-  } catch (e) {
-    console.error(e);
-    toast.error(t('state.microsoft_signin_failure'));
-  }
-
-  signingInWithMicrosoft.value = false;
-};
-
-const signInWithEmail = async () => {
-  signingInWithEmail.value = true;
-  try {
-    await auth.signInWithEmail(form.value.email);
-    mode.value = 'email-sent';
-    setLocalConfig('emailForSignIn', form.value.email);
-  } catch (e) {
-    console.error(e);
-    toast.error(t('state.email_signin_failure'));
-  }
-  signingInWithEmail.value = false;
-};
-
-const getAllowedAuthProviders = async () => {
-  fetching.value = true;
-  try {
-    const res = await auth.getAllowedAuthProviders();
-    return res;
-  } catch (e) {
-    error.value = true;
-    toast.error(t('state.error_auth_providers'));
+    toast.error(e.message)
   } finally {
-    fetching.value = false;
+    loggingIn.value = false
   }
-};
+}
 
 const logout = async () => {
   try {
@@ -267,3 +106,10 @@ const logout = async () => {
   }
 };
 </script>
+
+<style scoped>
+.btn-green {
+  background-color: green;
+  color: white;
+}
+</style>

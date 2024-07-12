@@ -222,6 +222,9 @@ importers:
       cookie-es:
         specifier: 1.0.0
         version: 1.0.0
+      crypto-js:
+        specifier: 4.2.0
+        version: 4.2.0
       dioc:
         specifier: 1.0.1
         version: 1.0.1(vue@3.3.9(typescript@5.3.2))
@@ -874,6 +877,9 @@ importers:
       buffer:
         specifier: 6.0.3
         version: 6.0.3
+      crypto-js:
+        specifier: 4.2.0
+        version: 4.2.0
       fp-ts:
         specifier: 2.16.1
         version: 2.16.1
@@ -929,6 +935,9 @@ importers:
       '@rushstack/eslint-patch':
         specifier: 1.6.0
         version: 1.6.0
+      '@types/crypto-js':
+        specifier: 4.2.2
+        version: 4.2.2
       '@typescript-eslint/eslint-plugin':
         specifier: 6.13.2
         version: 6.13.2(@typescript-eslint/parser@6.13.2(eslint@8.55.0)(typescript@5.3.2))(eslint@8.55.0)(typescript@5.3.2)
@@ -3864,6 +3873,9 @@ packages:
   '@types/cors@2.8.13':
     resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
 
+  '@types/crypto-js@4.2.2':
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+
   '@types/debug@4.1.8':
     resolution: {integrity: sha512-/vPO1EPOs306Cvhwv7KfVfYvOJqA/S/AXjaHQiJboCZzcNDb+TIJFN9/2C9DZ//ijSKWioNyUxD792QmDJ+HKQ==}
 
@@ -5412,6 +5424,9 @@ packages:
   crosspath@2.0.0:
     resolution: {integrity: sha512-ju88BYCQ2uvjO2bR+SsgLSTwTSctU+6Vp2ePbKPgSCZyy4MWZxYsT738DlKVRE5utUjobjPRm1MkTYKJxCmpTA==}
     engines: {node: '>=14.9.0'}
+
+  crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
 
   crypto-random-string@2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
@@ -14540,6 +14555,8 @@ snapshots:
     dependencies:
       '@types/node': 18.18.8
 
+  '@types/crypto-js@4.2.2': {}
+
   '@types/debug@4.1.8':
     dependencies:
       '@types/ms': 0.7.31
@@ -16729,6 +16746,8 @@ snapshots:
   crosspath@2.0.0:
     dependencies:
       '@types/node': 17.0.45
+
+  crypto-js@4.2.0: {}
 
   crypto-random-string@2.0.0: {}
 
