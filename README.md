@@ -8,6 +8,19 @@ This repository contains the frontend for an Automatic Test Platform (ATP) adapt
 - Only the frontend part of Hoppscotch is used and adapted here; the backend has been fully re-implemented in Java + MySQL (replacing the original TypeScript + PostgreSQL) and is maintained separately.
 - The frontend UI and some interactions have been modified to suit the automatic testing platform use cases.
 
+## Tech stack (frontend)
+
+- Vue 3 (Composition API, <script setup>)
+- TypeScript for type safety across packages
+- Vite as the dev server / build tool
+- Tailwind CSS for utility-first styling
+- pnpm workspaces / monorepo layout (packages/…) for multi-package management
+- GraphQL support (client/server endpoints configured via env)
+- Crypto utilities via the `crypto-js` package (used for AES encrypt/decrypt helpers)
+- i18n / localization files under packages/hoppscotch-common
+- Unit / integration test tooling present (Vitest / Jest in different packages)
+- Other tooling: tsup/rollup for builds, ESLint / Prettier for linting & formatting
+
 ## Quick start
 
 ### 1. Install dependencies:
