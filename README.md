@@ -17,11 +17,13 @@ pnpm install
 ### 2. Run a development server (example for the web package):
 
 cd packages/hoppscotch-selfhost-web
+
 pnpm run dev
 
 ### 3. Build:
 
 cd packages/hoppscotch-selfhost-web
+
 pnpm run build
 
 ## Configuration
